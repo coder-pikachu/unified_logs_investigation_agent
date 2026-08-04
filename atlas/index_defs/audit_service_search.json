@@ -1,0 +1,11 @@
+{
+  "mappings": {
+    "dynamic": false,
+    "fields": {
+      "err_cd": { "type": "token" },
+      "srvc_id": { "type": "token" },
+      "systm_nm": { "type": "token" },
+      "err_msg": { "type": "string" }
+    }
+  }
+}

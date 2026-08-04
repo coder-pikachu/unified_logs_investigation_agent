@@ -1,0 +1,34 @@
+[project]
+name = "nova-rca-agent"
+version = "0.1.0"
+description = "LangGraph RCA agent + change-stream watcher + FastAPI for the NOVA Atlas demo"
+requires-python = ">=3.12"
+dependencies = [
+    "pymongo>=4.8",
+    "langgraph>=0.2.50",
+    "langgraph-checkpoint-mongodb>=0.4",
+    "langgraph-store-mongodb>=0.1",
+    "langchain-openai>=0.2",
+    "langchain-core>=0.3",
+    "fastapi>=0.115",
+    "sse-starlette>=2.1",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "python-dotenv>=1.0",
+    "requests>=2.32",
+    "httpx>=0.27",
+    "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["nova_agent"]
+
+[tool.ruff]
+line-length = 100

@@ -1,0 +1,53 @@
+{
+  "id": "unipay-bbps-brownout",
+  "presenterNote": "UNIPAY autopay business-failure ratio (responseCode 001, BFR003) climbs over ~3 min while transport stays success -> billpay journey business failures. No status field ever turns red.",
+  "durationSeconds": 180,
+  "effects": [
+    {
+      "atOffsetMs": 0,
+      "kind": "business_failure_rate",
+      "params": {
+        "srvcId": "unipay_payment_billpay_autopay_pendingbills",
+        "complianceCode": "BFR003",
+        "rate": 0.3
+      }
+    },
+    {
+      "atOffsetMs": 30000,
+      "kind": "business_failure_rate",
+      "params": {
+        "srvcId": "unipay_payment_billpay_autopay_pendingbills",
+        "complianceCode": "BFR003",
+        "rate": 0.6
+      }
+    },
+    {
+      "atOffsetMs": 90000,
+      "kind": "business_failure_rate",
+      "params": {
+        "srvcId": "unipay_payment_billpay_autopay_pendingbills",
+        "complianceCode": "BFR003",
+        "rate": 0.85
+      }
+    },
+    {
+      "atOffsetMs": 0,
+      "kind": "business_failure_rate",
+      "params": {
+        "srvcId": "unipay_payment_billpay_autopay_get_active_activebillshistory",
+        "complianceCode": "BFR003",
+        "rate": 0.4
+      }
+    }
+  ],
+  "title": "UNIPAY BBPS brownout",
+  "faultClass": "business",
+  "expectedOrigin": "unipay_payment_billpay_autopay_pendingbills \u2014 UNIPAY BBPS business brownout",
+  "decoy": "billpay/autopay failures with NO red status field (trns_sts stays 'success')",
+  "description": "Transport succeeds while business fails (reason.responseReason 'Failure' / complianceReason BFR003). A business-layer brownout that never trips a red status \u2014 caught only by decoding the payload.",
+  "analyzes": [
+    "audit_service \u2014 transport-ok / business-fail payload (origin)",
+    "service_metrics \u2014 business-fail rate climbing",
+    "audit_transaction \u2014 billpay journeys"
+  ]
+}

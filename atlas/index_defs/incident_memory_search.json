@@ -1,0 +1,10 @@
+{
+  "mappings": {
+    "dynamic": false,
+    "fields": {
+      "err_cds": { "type": "token" },
+      "srvc_ids": { "type": "token" },
+      "summary_text": { "type": "string" }
+    }
+  }
+}

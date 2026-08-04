@@ -1,0 +1,17 @@
+{
+  "mappings": {
+    "dynamic": false,
+    "fields": {
+      "err_cd": { "type": "token" },
+      "err_typ": { "type": "token" },
+      "err_dscrptn": { "type": "string" },
+      "err_dtls": { "type": "string" },
+      "biz_err_cd_1": { "type": "token" },
+      "biz_err_cd_2": { "type": "token" },
+      "biz_err_cd_3": { "type": "token" },
+      "biz_err_cd_4": { "type": "token" },
+      "biz_err_cd_5": { "type": "token" },
+      "biz_err_cd_1_msg": { "type": "string" }
+    }
+  }
+}

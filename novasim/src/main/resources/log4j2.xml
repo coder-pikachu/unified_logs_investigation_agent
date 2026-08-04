@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  novasim logging config.
+
+  The NovaMongo appender writes MapMessage documents to Atlas; it is wrapped in
+  an AsyncAppender so journey threads never block on inserts. A separate
+  ConsoleAppender mirrors a human-readable line, gated by MirrorFilter
+  (Mirror.on). Console output is NEVER written to Atlas.
+-->
+<Configuration status="warn">
+  <Appenders>
+    <NovaMongo name="Mongo"/>
+
+    <Async name="AsyncMongo" bufferSize="8192">
+      <AppenderRef ref="Mongo"/>
+    </Async>
+
+    <Console name="Mirror" target="SYSTEM_OUT">
+      <MirrorFilter/>
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%X{sessnTknId}/%X{trnsId}] %msg%n"/>
+    </Console>
+  </Appenders>
+
+  <Loggers>
+    <!-- Journey/service/error/metric documents flow through this logger. -->
+    <Logger name="nova.emit" level="info" additivity="false">
+      <AppenderRef ref="AsyncMongo"/>
+      <AppenderRef ref="Mirror"/>
+    </Logger>
+
+    <Root level="warn">
+      <AppenderRef ref="Mirror"/>
+    </Root>
+  </Loggers>
+</Configuration>

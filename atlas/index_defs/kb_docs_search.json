@@ -1,0 +1,11 @@
+{
+  "mappings": {
+    "dynamic": false,
+    "fields": {
+      "codes": { "type": "token" },
+      "tags": { "type": "token" },
+      "title": { "type": "string" },
+      "body": { "type": "string" }
+    }
+  }
+}

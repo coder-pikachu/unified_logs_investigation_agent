@@ -1,0 +1,26 @@
+{
+  "id": "demand-loan-improper-response",
+  "presenterNote": "CBS loan-discharge dependency returns a malformed body -> BSDML024 'received improper response' wrapped in BSDML050. Unwrap the nested err_dtls chain; the innermost code names the real cause.",
+  "durationSeconds": 30,
+  "effects": [
+    {
+      "atOffsetMs": 0,
+      "kind": "business_failure_rate",
+      "params": {
+        "cmndId": "lending_demand_demand-loan-closure_manage",
+        "complianceCode": "BSDML050",
+        "rate": 0.7
+      }
+    }
+  ],
+  "title": "Demand-loan improper response",
+  "faultClass": "technical",
+  "expectedOrigin": "CBS loan-discharge dependency \u2014 innermost BSDML024 'received improper response'",
+  "decoy": "BSDML050 public wrapper 'your request has failed, visit branch'",
+  "description": "The CBS loan-discharge dependency returns a malformed body. Unwrap err_dtls past the public BSDML050 to the innermost BSDML024 \u2014 a technical contract violation, not the customer-facing wrapper.",
+  "analyzes": [
+    "audit_error \u2014 nested BSDML050\u2192BSDML024 (unwrap to origin)",
+    "audit_service \u2014 CBS discharge malformed response",
+    "audit_transaction \u2014 lending demand-loan-closure"
+  ]
+}

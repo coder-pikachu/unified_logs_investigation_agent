@@ -1,0 +1,5 @@
+{
+  "fields": [
+    { "type": "autoEmbed", "modality": "text", "path": "summary_text", "model": "voyage-4-lite" }
+  ]
+}

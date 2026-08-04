@@ -1,0 +1,26 @@
+{
+  "id": "poison-retry-loop",
+  "presenterNote": "One client app replays a malformed biz_req_input -> identical 5151 technical exceptions repeating for one usr_id/session. Distinguish a single-client poison loop from a systemic outage via incidence checks.",
+  "durationSeconds": 20,
+  "effects": [
+    {
+      "atOffsetMs": 0,
+      "kind": "client_replay",
+      "params": {
+        "cmndId": "pfm_financial-fitness_customer_kyc_fetch",
+        "count": 20,
+        "errCd": "5151"
+      }
+    }
+  ],
+  "title": "Poison retry loop",
+  "faultClass": "technical",
+  "expectedOrigin": "a single misbehaving client/session replaying a malformed request",
+  "decoy": "high count of identical 5151 technical exceptions (looks like a systemic outage)",
+  "description": "One client repeatedly replays a malformed biz_req_input, producing a loud 5151 count \u2014 but incidence is 1 user / 1 session. A client-side technical loop, not a systemic failure. Discriminator is incidence, not error count.",
+  "analyzes": [
+    "audit_error \u2014 repeated identical 5151 (origin, 1 user)",
+    "audit_transaction \u2014 one journey / one session",
+    "incidence check \u2014 distinct usr_id == 1"
+  ]
+}

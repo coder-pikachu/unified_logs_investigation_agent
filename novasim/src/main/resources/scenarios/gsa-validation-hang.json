@@ -1,0 +1,38 @@
+{
+  "id": "gsa-validation-hang",
+  "presenterNote": "Insurer validation dependency slows -> gi_gsa_purchase_validate_checks p95 climbs to 15s -> TEY2GSA02 technical exception after timeout (web channel 1001). Origin is the dependency latency, not the validation code.",
+  "durationSeconds": 30,
+  "effects": [
+    {
+      "atOffsetMs": 0,
+      "kind": "route_latency",
+      "params": {
+        "srvcId": "gi_gsa_purchase_validate_checks",
+        "targetMs": 15000,
+        "rampMs": 8000
+      }
+    },
+    {
+      "atOffsetMs": 9000,
+      "kind": "route_error_rate",
+      "params": {
+        "srvcId": "gi_gsa_purchase_validate_checks",
+        "errCd": "TEY2GSA02",
+        "errMsg": "Technical Error: processing failed due to unexpected data state",
+        "transStatus": -2,
+        "rate": 0.8
+      }
+    }
+  ],
+  "title": "GSA validation hang",
+  "faultClass": "technical",
+  "expectedOrigin": "external insurer validation dependency behind gi_gsa_purchase_validate_checks",
+  "decoy": "TEY2GSA02 'request validation' \u2014 reads like a validation-code bug",
+  "description": "The insurer validation dependency slows to ~15s; the request times out and the journey emits TEY2GSA02 AFTER the timeout. Technical dependency latency, not the journey's validation logic (web channel).",
+  "analyzes": [
+    "audit_service \u2014 ~15s duration then TEY2GSA02 (origin)",
+    "service_metrics \u2014 p95 blowout vs baseline",
+    "audit_transaction \u2014 gi_gsa validate (web 1001)",
+    "audit_error \u2014 TEY2GSA02"
+  ]
+}

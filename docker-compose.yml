@@ -1,0 +1,39 @@
+# Containerized stack for the NOVA 2.0 RCA demo.
+# Atlas is CLOUD — reached via MONGODB_URI in .env. No database container here.
+# `make up` runs the same services locally (venv + vite) and is the verified
+# demo path; this file is the containerized alternative:
+#   docker compose up --build api ui
+#   docker compose --profile sim up --build      # also runs background traffic
+#
+# The UI's nginx proxies /api to the `api` service (see ui/nginx.conf).
+
+services:
+  api:
+    build:
+      context: ./agent
+    env_file: .env
+    environment:
+      AGENT_PORT: "8000"
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ./ui
+    depends_on:
+      - api
+    ports:
+      - "5173:80"        # nginx serves the built SPA and proxies /api -> api:8000
+    restart: unless-stopped
+
+  novasim:
+    profiles: ["sim"]
+    build:
+      context: ./novasim
+    env_file: .env
+    # headless background traffic + agent_state poller (fire scenarios from the UI)
+    command: ["--headless", "--rate", "5", "--duration", "86400"]
+    depends_on:
+      - api
+    restart: unless-stopped

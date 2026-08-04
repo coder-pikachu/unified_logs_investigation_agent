@@ -1,0 +1,73 @@
+{
+  "id": "eis-gateway-pool-exhaustion",
+  "presenterNote": "Connection failures to the EIS gateway host across ALL eis_* routes at once -> every EIS-backed journey degrades. Widest blast radius; loudest errors are per-journey business exceptions; origin is the shared gateway.",
+  "durationSeconds": 40,
+  "effects": [
+    {
+      "atOffsetMs": 0,
+      "kind": "route_error_rate",
+      "params": {
+        "srvcId": "eis_marTech_getInteractOffers",
+        "errCd": "TEEIS009",
+        "errMsg": "Connection reset by peer",
+        "transStatus": -2,
+        "rate": 0.8
+      }
+    },
+    {
+      "atOffsetMs": 0,
+      "kind": "route_error_rate",
+      "params": {
+        "srvcId": "eis_financialfitness_accessToken",
+        "errCd": "TEEIS009",
+        "errMsg": "Connection reset by peer",
+        "transStatus": -2,
+        "rate": 0.8
+      }
+    },
+    {
+      "atOffsetMs": 0,
+      "kind": "route_error_rate",
+      "params": {
+        "srvcId": "eis_financialfitness_summary",
+        "errCd": "TEEIS009",
+        "errMsg": "Connection reset by peer",
+        "transStatus": -2,
+        "rate": 0.8
+      }
+    },
+    {
+      "atOffsetMs": 0,
+      "kind": "route_error_rate",
+      "params": {
+        "srvcId": "eis_etb_customerprofile_querycustprofile",
+        "errCd": "TEEIS009",
+        "errMsg": "Connection reset by peer",
+        "transStatus": -2,
+        "rate": 0.8
+      }
+    },
+    {
+      "atOffsetMs": 0,
+      "kind": "route_error_rate",
+      "params": {
+        "srvcId": "eis_cc_branchportal_account_cifAssociatedAccount",
+        "errCd": "TEEIS009",
+        "errMsg": "Connection reset by peer",
+        "transStatus": -2,
+        "rate": 0.8
+      }
+    }
+  ],
+  "title": "EIS gateway pool exhaustion",
+  "faultClass": "technical",
+  "expectedOrigin": "shared EIS gateway host / connection pool",
+  "decoy": "many different journeys' business exceptions firing at once",
+  "description": "The shared EIS gateway connection pool exhausts; every EIS-backed route fails together. The widest-blast-radius technical/infra failure \u2014 many routes at once implicates the shared gateway, not any one vendor.",
+  "analyzes": [
+    "audit_service \u2014 many eis_* routes failing simultaneously (origin: shared gateway)",
+    "audit_error \u2014 mixed business codes across journeys (symptoms)",
+    "service_metrics \u2014 breadth across routes",
+    "audit_transaction \u2014 many EIS-backed journeys"
+  ]
+}

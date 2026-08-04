@@ -1,0 +1,25 @@
+{
+  "id": "think360-token-expiry",
+  "presenterNote": "eis_financialfitness_accessToken renewals fail / JWT expiry passes -> PFM kyc/summary/consent calls fail simultaneously across sessions (5151, 401/404-inside-success). Fan-out from a single shared credential.",
+  "durationSeconds": 30,
+  "effects": [
+    {
+      "atOffsetMs": 0,
+      "kind": "token_expiry",
+      "params": {
+        "srvcId": "eis_financialfitness_accessToken"
+      }
+    }
+  ],
+  "title": "THINK360 token expiry",
+  "faultClass": "technical",
+  "expectedOrigin": "eis_financialfitness_accessToken \u2014 shared THINK360 credential/token",
+  "decoy": "5151 across many PFM journeys, plus 404-inside-success",
+  "description": "A shared credential/token expiry fans out; every PFM call using the token fast-fails (5151, single-digit ms) or gets 404 buried in a transport-ok response. A technical credential failure.",
+  "analyzes": [
+    "audit_service \u2014 accessToken failure + 404-inside-success (origin)",
+    "audit_error \u2014 5151 fan-out",
+    "audit_transaction \u2014 pfm_* journeys",
+    "service_metrics \u2014 fast-fail signature"
+  ]
+}

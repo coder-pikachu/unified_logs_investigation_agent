@@ -1,0 +1,34 @@
+{
+  "id": "login-failures",
+  "title": "User can't log in",
+  "faultClass": "technical",
+  "presenterNote": "The IAM/identity service behind the login journey goes down. Every 'customer can't log in' report is a symptom; the origin is one shared IAM route.",
+  "durationSeconds": 60,
+  "effects": [
+    {
+      "atOffsetMs": 0,
+      "kind": "route_latency",
+      "params": { "srvcId": "eis_iam_authenticate", "targetMs": 4000, "rampMs": 10000 }
+    },
+    {
+      "atOffsetMs": 2000,
+      "kind": "route_error_rate",
+      "params": {
+        "srvcId": "eis_iam_authenticate",
+        "errCd": "TEIAM001",
+        "errMsg": "IAM authentication service unavailable.",
+        "transStatus": -2,
+        "rate": 0.8
+      }
+    }
+  ],
+  "expectedOrigin": "eis_iam_authenticate — the shared IAM/identity dependency behind login",
+  "decoy": "a wall of failed logins (5151) across many users — looks like an app problem",
+  "description": "The identity service (IAM) behind the login journey fails. Users pile up 'can't log in' errors on their phones, but the origin is the single shared IAM route on the EIS gateway — not the app.",
+  "analyzes": [
+    "audit_service — TEIAM001, trns_sts -2 on iam/authenticate (origin)",
+    "audit_error — 5151 login failures across users (symptoms)",
+    "service_metrics — auth route latency/error-rate spike",
+    "audit_transaction — auth_login journeys"
+  ]
+}

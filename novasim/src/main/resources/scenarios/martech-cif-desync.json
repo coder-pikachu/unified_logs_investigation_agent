@@ -1,0 +1,34 @@
+{
+  "id": "martech-cif-desync",
+  "presenterNote": "Ops 'Martech audience refresh' success txn precedes a BSYHP003 'CIF Is Not Recognized' spike for a cohort. Link a non-error precursor to the failures.",
+  "durationSeconds": 30,
+  "effects": [
+    {
+      "atOffsetMs": 0,
+      "kind": "ops_txn",
+      "params": {
+        "cmndId": "ops_martech_audience_refresh_execute"
+      }
+    },
+    {
+      "atOffsetMs": 3000,
+      "kind": "business_failure_rate",
+      "params": {
+        "cmndId": "martech_hyper-personalization_offers_fetch",
+        "complianceCode": "BSYHP003",
+        "rate": 0.55
+      }
+    }
+  ],
+  "title": "Martech CIF desync",
+  "faultClass": "business",
+  "expectedOrigin": "ops_martech_audience_refresh_execute \u2014 audience/CIF desync (a SUCCESS precursor)",
+  "decoy": "BSYHP003 'CIF Is Not Recognized By Martech' spiking for a cohort",
+  "description": "A successful audience-refresh ops job dropped CIFs from the Martech store; offers later fail with BSYHP003 for that cohort. A data/business desync \u2014 normal EIS latency, no TEEIS009.",
+  "analyzes": [
+    "audit_transaction \u2014 ops_* refresh (success precursor, origin)",
+    "audit_error \u2014 BSYHP003 (symptoms)",
+    "audit_service \u2014 normal latency",
+    "service_metrics \u2014 no route blowout"
+  ]
+}

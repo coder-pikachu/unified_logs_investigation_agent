@@ -1,0 +1,34 @@
+{
+  "id": "upi-payment-failures",
+  "title": "UPI payments failing",
+  "faultClass": "technical",
+  "presenterNote": "The UPI switch behind send-money times out (U68). Customers see failed payments; the origin is the payment switch route at UNIPAY, not the app.",
+  "durationSeconds": 60,
+  "effects": [
+    {
+      "atOffsetMs": 0,
+      "kind": "route_latency",
+      "params": { "srvcId": "unipay_upi_payment_transfer", "targetMs": 8000, "rampMs": 12000 }
+    },
+    {
+      "atOffsetMs": 2000,
+      "kind": "route_error_rate",
+      "params": {
+        "srvcId": "unipay_upi_payment_transfer",
+        "errCd": "U68",
+        "errMsg": "UPI switch timeout - transaction declined.",
+        "transStatus": -2,
+        "rate": 0.75
+      }
+    }
+  ],
+  "expectedOrigin": "unipay_upi_payment_transfer — the UPI switch route at UNIPAY",
+  "decoy": "many customers' failed payments (5151 journey errors) — looks like a wallet/app bug",
+  "description": "The UPI switch behind send-money starts timing out (NPCI-style U68). Every failed payment on a customer's screen is a symptom; the origin is the shared switch route behind UNIPAY.",
+  "analyzes": [
+    "audit_service — U68, trns_sts -2 on upi-switch/payment (origin)",
+    "audit_error — 5151 payment failures across users (symptoms)",
+    "service_metrics — switch latency ramp ~240ms → 8s",
+    "audit_transaction — upi_payment_send_money journeys"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "eis-martech-brownout",
+  "presenterNote": "EIS thirdParty/wrapper/Martech route slows 300ms->10s with TEEIS009 across sessions; martech offers_fetch dashboards fail with BS000001/BSYHP003. Origin is one shared downstream route.",
+  "durationSeconds": 30,
+  "effects": [
+    {
+      "atOffsetMs": 0,
+      "kind": "route_latency",
+      "params": {
+        "srvcId": "eis_marTech_getInteractOffers",
+        "targetMs": 10000,
+        "rampMs": 20000
+      }
+    },
+    {
+      "atOffsetMs": 3000,
+      "kind": "route_error_rate",
+      "params": {
+        "srvcId": "eis_marTech_getInteractOffers",
+        "errCd": "TEEIS009",
+        "errMsg": "Response Transformation failed.",
+        "transStatus": -2,
+        "rate": 0.75
+      }
+    },
+    {
+      "atOffsetMs": 3000,
+      "kind": "business_failure_rate",
+      "params": {
+        "cmndId": "martech_hyper-personalization_offers_fetch",
+        "complianceCode": "BSYHP003",
+        "rate": 0.6
+      }
+    }
+  ],
+  "title": "EIS \u00b7 Martech brownout",
+  "faultClass": "technical",
+  "expectedOrigin": "eis_marTech_getInteractOffers \u2014 shared EIS thirdParty/wrapper/Martech route",
+  "decoy": "BS000001 / BSYHP003 offer-fetch business errors across many dashboards",
+  "description": "Response transformation on the shared EIS Martech route fails (TEEIS009, ~10s). The loud user-facing offer errors are downstream symptoms; the origin is one shared downstream route.",
+  "analyzes": [
+    "audit_service \u2014 TEEIS009, trns_sts -2 (origin)",
+    "audit_error \u2014 BS000001/BSYHP003 (symptoms)",
+    "service_metrics \u2014 p95 ~300ms \u2192 ~10s",
+    "audit_transaction \u2014 martech offers_fetch"
+  ]
+}

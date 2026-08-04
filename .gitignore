@@ -1,0 +1,23 @@
+# secrets
+.env
+*.pem
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# java
+novasim/target/
+
+# node
+ui/node_modules/
+ui/dist/
+
+# misc
+.DS_Store
+*.log
+data/replay/*.jsonl.tmp
