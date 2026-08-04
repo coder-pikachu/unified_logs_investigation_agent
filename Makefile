@@ -15,7 +15,7 @@ UI_PORT    ?= 5173
 export PATH := $(JAVA_HOME)/bin:$(PATH)
 
 .DEFAULT_GOAL := help
-.PHONY: help up down seed sim demo demo-live replay reset atlas-provision agent ui build-sim health logs venv ui-install test test-unit eval validate check-no-embed
+.PHONY: help up down seed sim demo demo-live demo-chat replay reset atlas-provision agent ui build-sim health logs venv ui-install test test-unit eval validate check-no-embed
 
 help: ## show targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -81,6 +81,9 @@ demo: up ## up + open the ops board; then run `make sim` in another shell
 
 demo-live: ## guided end-to-end demo: reset -> traffic -> fire -> memory beat -> grep beat
 	@bash $(ROOT)/scripts/demo.sh
+
+demo-chat: ## guided chat-investigation demo: honesty -> match -> follow-up -> vision -> chat-launched RCA
+	@bash $(ROOT)/scripts/demo_chat.sh
 
 replay: venv ## offline fallback: replay a recorded run with networking disabled
 	@REPLAY_MODE=1 $(PY) $(ROOT)/agent/replay.py
