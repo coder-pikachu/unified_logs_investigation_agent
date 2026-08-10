@@ -1,251 +1,185 @@
-import { Chip } from "../components/primitives";
+// Visual explainer for the novasim simulator + journey mesh. Diagram-first,
+// low-prose — meant to be read across a room during a live demo. Presentational
+// only; grounded in novasim RoutingTable + docs/SCHEMA.md.
 
-// Static explainer: what the novasim simulator is, what the logs are, and what
-// each system in the NOVA 2.0 journey mesh does. Presentational only — no
-// backend. Grounded in novasim RoutingTable + docs/SCHEMA.md; nothing here is
-// written to any document (the agent never sees scenario names or this map).
-
-interface SystemRow {
-  key: string;
-  label: string;
-  what: string;
-  routes: string[];
-  journeys: string;
-  viaEis: boolean;
+function Arrow() {
+  return <span className="select-none px-1 text-lg text-muted">→</span>;
 }
 
-const SYSTEMS: SystemRow[] = [
-  {
-    key: "EIS",
-    label: "EIS",
-    what: "The enterprise integration gateway every backend sits behind. Shared — so one failing route fans out across unrelated journeys.",
-    routes: [
-      "eis_iam_authenticate",
-      "eis_marTech_getInteractOffers",
-      "eis_financialfitness_accessToken",
-      "eis_etb_customerprofile_querycustprofile",
-      "eis_cc_branchportal_account_cifAssociatedAccount",
-    ],
-    journeys: "login · offers · PFM (kyc/consent/summary) · profile · cards",
-    viaEis: false,
-  },
-  {
-    key: "UNIPAY",
-    label: "UNIPAY",
-    what: "Payments platform — UPI switch and BBPS bill-pay / autopay. Note the authentic leading space in systm_nm: ' UNIPAY'.",
-    routes: [
-      "unipay_upi_payment_transfer",
-      "unipay_payment_billpay_autopay_pendingbills",
-      "unipay_payment_billpay_autopay_query_favouritebillers",
-      "unipay_payment_billpay_autopay_get_active_activebillshistory",
-    ],
-    journeys: "UPI send-money · billpay autopay / favourites",
-    viaEis: false,
-  },
-  {
-    key: "MARTECH",
-    label: "MARTECH",
-    what: "Hyper-personalization / offers engine, reached through the shared EIS thirdParty/wrapper/Martech route.",
-    routes: ["eis_marTech_getInteractOffers"],
-    journeys: "offers fetch",
-    viaEis: true,
-  },
-  {
-    key: "THINK360",
-    label: "THINK360",
-    what: "Financial-fitness / PFM data provider, reached via EIS on a shared access-token route — one expired credential breaks every PFM journey at once.",
-    routes: ["eis_financialfitness_accessToken", "eis_financialfitness_summary"],
-    journeys: "PFM kyc / consent / summary",
-    viaEis: true,
-  },
-];
-
-interface DocRow {
-  coll: string;
-  one: string;
-  is: string;
-  fields: string;
-  role: string;
-}
-
-const DOCS: DocRow[] = [
-  {
-    coll: "audit_transaction",
-    one: "one per journey action",
-    is: "what the user did",
-    fields: "cmnd_id · channel · trns_stts · biz_req/resp",
-    role: "the user-facing symptom",
-  },
-  {
-    coll: "audit_service",
-    one: "one per downstream call",
-    is: "what a backend did",
-    fields: "srvc_id · systm_nm · trns_sts · srvc_rqst/rspn",
-    role: "where the ORIGIN usually hides",
-  },
-  {
-    coll: "audit_error",
-    one: "only on failure",
-    is: "the error, with nested code chain",
-    fields: "err_cd (BS*/TE*/5151) · err_typ · err_dtls",
-    role: "the loud decoy",
-  },
-  {
-    coll: "service_metrics",
-    one: "one time-series point per call",
-    is: "latency + status, per route",
-    fields: "ts · durationMs · transportOk · businessOk",
-    role: "sparklines + agent p95 baseline",
-  },
-];
-
-const CMDS: { cmd: string; does: string }[] = [
-  { cmd: "status", does: "throughput + open scenarios" },
-  { cmd: "scenarios", does: "list injectable scenario ids" },
-  { cmd: "fire <id>", does: "inject a scenario's effects into live traffic" },
-  { cmd: "quit", does: "stop the simulator" },
-];
-
-function Section({ title, right, children }: { title: string; right?: string; children: React.ReactNode }) {
+function Stage({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="panel p-3">
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-sm font-medium text-fg">{title}</span>
-        {right && <span className="label">{right}</span>}
-      </div>
-      {children}
+    <div className="flex min-w-0 flex-1 flex-col">
+      <div className="label mb-1.5 text-center">{label}</div>
+      <div className="panel-2 flex flex-1 flex-col gap-1.5 border border-edge p-2.5">{children}</div>
     </div>
   );
 }
 
-function Mono({ children }: { children: React.ReactNode }) {
-  return <span className="font-mono text-[11px] text-accent">{children}</span>;
+function Pill({ children, tone = "fg" }: { children: React.ReactNode; tone?: "fg" | "accent" | "accent2" }) {
+  const c = tone === "accent" ? "text-accent" : tone === "accent2" ? "text-accent2" : "text-fgdim";
+  return <span className={`rounded bg-panel px-1.5 py-0.5 font-mono text-[10px] ${c}`}>{children}</span>;
 }
+
+// collection tiles — the four writes per action
+const WRITES: { coll: string; role: string; sev: string; one: string }[] = [
+  { coll: "audit_transaction", role: "the user-facing symptom", sev: "bg-sev-info", one: "what the user did" },
+  { coll: "audit_service", role: "where the ORIGIN hides", sev: "bg-sev-ok", one: "what a backend did" },
+  { coll: "audit_error", role: "the loud decoy", sev: "bg-sev-crit", one: "the error (nested codes)" },
+  { coll: "service_metrics", role: "sparklines · p95 baseline", sev: "bg-sev-warn", one: "latency + status, time-series" },
+];
+
+const SYSTEMS: { key: string; one: string; routes: string[]; via?: boolean }[] = [
+  {
+    key: "EIS",
+    one: "Gateway every backend sits behind — one bad route hits many journeys.",
+    routes: ["eis_iam_authenticate", "eis_marTech_getInteractOffers", "eis_financialfitness_accessToken", "eis_etb_customerprofile_querycustprofile", "eis_cc_branchportal_account_cifAssociatedAccount"],
+  },
+  {
+    key: "UNIPAY",
+    one: "Payments — UPI switch + BBPS bill-pay / autopay.",
+    routes: ["unipay_upi_payment_transfer", "unipay_payment_billpay_autopay_pendingbills", "unipay_payment_billpay_autopay_query_favouritebillers"],
+  },
+  { key: "MARTECH", one: "Offers / personalization engine.", routes: ["eis_marTech_getInteractOffers"], via: true },
+  { key: "THINK360", one: "PFM data — shared access token; one expiry breaks all PFM.", routes: ["eis_financialfitness_accessToken", "eis_financialfitness_summary"], via: true },
+];
 
 export function SystemView() {
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-auto p-3">
-      {/* what the simulator is */}
-      <Section title="The simulator — novasim" right="Java 21 · Log4j2 → one Atlas DB">
-        <p className="text-xs leading-relaxed text-fgdim">
-          <span className="text-fg">novasim</span> continuously plays the NOVA 2.0 banking super-app the
-          way real users would — <Mono>~5 journey-actions/sec</Mono> across a pool of{" "}
-          <Mono>~40 sessions</Mono>. It is a live traffic generator, not a mock: each action mints a
-          fresh <Mono>trns_id</Mono>, walks a real journey → downstream route path, and writes
-          documents in the exact production shapes through a custom Log4j2 Mongo appender. Firing a
-          scenario injects <span className="text-fg">effects</span> (extra latency, an error rate, a
-          business-failure ratio) into that live traffic — failures are woven into genuine noise.{" "}
-          <span className="text-fg">No scenario name is ever written to the data</span>; the agent
-          only ever sees the resulting logs.
-        </p>
-      </Section>
+      {/* stat strip */}
+      <div className="panel flex flex-wrap items-center gap-x-4 gap-y-1 p-2.5 text-[11px]">
+        <span className="text-sm font-medium text-fg">novasim</span>
+        <span className="text-muted">live traffic generator — not a mock</span>
+        <span className="ml-auto flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-fgdim">
+          <span><span className="text-accent">~5</span> actions/sec</span>
+          <span><span className="text-accent">~40</span> sessions</span>
+          <span>Java 21 · Log4j2</span>
+          <span className="text-accent2">→ one Atlas DB</span>
+        </span>
+      </div>
 
-      {/* the flow */}
-      <Section title="One user action → up to four writes" right="all share one trns_id">
-        <div className="mb-3 flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-fgdim">
-          <span className="rounded bg-panel2 px-2 py-1 text-fg">session (user)</span>
-          <span className="text-muted">→</span>
-          <span className="rounded bg-panel2 px-2 py-1 text-accent">journey · cmnd_id</span>
-          <span className="text-muted">→</span>
-          <span className="rounded bg-panel2 px-2 py-1 text-accent2">downstream route · srvc_id</span>
-          <span className="text-muted">→</span>
-          <span className="rounded bg-panel2 px-2 py-1 text-fg">system (EIS / UNIPAY)</span>
-          <span className="text-muted">→</span>
-          <span className="rounded border border-edge px-2 py-1">Atlas collections</span>
+      {/* hero pipeline */}
+      <div className="panel p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-sm font-medium text-fg">How one user action becomes logs</span>
+          <span className="label">no scenario name is ever written — the agent only sees logs</span>
         </div>
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
-          {DOCS.map((d) => (
-            <div key={d.coll} className="panel-2 border border-edge p-2.5">
-              <div className="mb-1 font-mono text-[11px] font-bold text-accent">{d.coll}</div>
-              <div className="label mb-1">{d.one}</div>
-              <div className="mb-1.5 text-xs text-fg">{d.is}</div>
-              <div className="mb-1.5 font-mono text-[10px] leading-relaxed text-muted">{d.fields}</div>
-              <div className="text-[10px] uppercase tracking-wide text-fgdim">{d.role}</div>
+        <div className="flex items-stretch">
+          <Stage label="users">
+            <div className="text-center">
+              <div className="font-mono text-2xl font-bold text-fg">≈40</div>
+              <div className="label">sessions</div>
             </div>
-          ))}
+          </Stage>
+          <Arrow />
+          <Stage label="journey · cmnd_id">
+            <Pill tone="accent">Login</Pill>
+            <Pill tone="accent">Offers</Pill>
+            <Pill tone="accent">UPI</Pill>
+            <Pill tone="accent">PFM</Pill>
+            <Pill tone="accent">BillPay</Pill>
+          </Stage>
+          <Arrow />
+          <Stage label="route · srvc_id → system">
+            <div className="rounded border border-edge2 bg-panel px-2 py-1">
+              <span className="font-mono text-[11px] font-bold text-fg">EIS</span>
+              <span className="ml-1 text-[9px] text-muted">gateway · shared</span>
+              <div className="mt-1 flex flex-wrap gap-1">
+                <span className="chip border border-edge text-fgdim">Martech</span>
+                <span className="chip border border-edge text-fgdim">THINK360</span>
+              </div>
+            </div>
+            <div className="rounded border border-edge2 bg-panel px-2 py-1">
+              <span className="font-mono text-[11px] font-bold text-fg">UNIPAY</span>
+              <span className="ml-1 text-[9px] text-muted">UPI · BBPS</span>
+            </div>
+          </Stage>
+          <Arrow />
+          <Stage label="one Atlas DB · nova_rca">
+            {WRITES.map((w) => (
+              <div key={w.coll} className="flex items-center gap-1.5">
+                <span className={`h-2 w-2 shrink-0 rounded-sm ${w.sev}`} />
+                <span className="truncate font-mono text-[10px] text-fgdim">{w.coll}</span>
+              </div>
+            ))}
+          </Stage>
         </div>
-      </Section>
+      </div>
+
+      {/* four writes, expanded */}
+      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
+        {WRITES.map((w) => (
+          <div key={w.coll} className="panel-2 overflow-hidden border border-edge">
+            <div className={`h-1 w-full ${w.sev}`} />
+            <div className="p-2.5">
+              <div className="mb-0.5 font-mono text-[11px] font-bold text-accent">{w.coll}</div>
+              <div className="text-xs text-fg">{w.one}</div>
+              <div className="mt-1.5 text-[10px] uppercase tracking-wide text-muted">{w.role}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* systems */}
-      <Section title="The systems in the mesh" right="all reached through EIS except UNIPAY">
-        <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
+      <div className="panel p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-sm font-medium text-fg">Systems in the mesh</span>
+          <span className="label">all reached through EIS except UNIPAY</span>
+        </div>
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
           {SYSTEMS.map((s) => (
-            <div key={s.key} className="panel-2 border border-edge p-2.5">
-              <div className="mb-1.5 flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-fg">{s.label}</span>
-                {s.viaEis && <Chip title="reached through the EIS gateway">via EIS</Chip>}
+            <div key={s.key} className="panel-2 flex flex-col gap-1.5 border border-edge p-2.5">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-bold text-fg">{s.key}</span>
+                {s.via && <span className="chip border border-edge text-muted">via EIS</span>}
+                <span className="ml-auto font-mono text-[10px] text-muted">{s.routes.length} routes</span>
               </div>
-              <p className="mb-2 text-xs leading-relaxed text-fgdim">{s.what}</p>
-              <div className="label mb-1">routes · srvc_id</div>
-              <div className="mb-2 flex flex-wrap gap-1">
+              <div className="text-[11px] text-fgdim">{s.one}</div>
+              <div className="flex flex-wrap gap-1">
                 {s.routes.map((r) => (
-                  <span key={r} className="font-mono text-[10px] text-accent2">
-                    {r}
-                  </span>
+                  <span key={r} className="font-mono text-[9px] text-accent2">{r}</span>
                 ))}
               </div>
-              <div className="label mb-0.5">journeys that depend on it</div>
-              <div className="text-[11px] text-muted">{s.journeys}</div>
             </div>
           ))}
         </div>
-      </Section>
+      </div>
 
-      {/* journeys vs routes vs ops + the big idea */}
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.4fr_1fr]">
-        <Section title="Journeys · routes · ops jobs">
-          <ul className="space-y-2 text-xs leading-relaxed text-fgdim">
-            <li>
-              <span className="text-fg">Journey</span> (<Mono>cmnd_id</Mono>, shaped{" "}
-              <span className="font-mono text-[11px] text-muted">domain_module_feature_action</span>) —
-              what the user did, e.g.{" "}
-              <span className="font-mono text-[11px] text-muted">martech_hyper-personalization_offers_fetch</span>.
-            </li>
-            <li>
-              <span className="text-fg">Route</span> (<Mono>srvc_id</Mono>) — the shared downstream
-              endpoint a journey called. Many journeys share one route — which is exactly why the loud
-              symptom and the quiet origin live in <span className="text-fg">different collections</span>.
-            </li>
-            <li>
-              <span className="text-fg">Ops jobs</span> —{" "}
-              <span className="font-mono text-[11px] text-muted">ops_martech_audience_refresh_execute</span>,{" "}
-              <span className="font-mono text-[11px] text-muted">ops_eis_config_deploy_execute</span>:
-              background maintenance that succeeds silently. In <Mono>martech-cif-desync</Mono> a{" "}
-              <span className="text-fg">successful</span> ops job is the root cause of the failures
-              that follow it.
-            </li>
-          </ul>
-        </Section>
-
-        <Section title="The one idea: origin ≠ loudest error">
-          <p className="text-xs leading-relaxed text-fgdim">
-            Every scenario is built so the error that screams loudest is never the root cause. Fifty
-            users see login failures — but one shared IAM route is the origin. A dashboard fills with
-            business errors — but a successful upstream ops job caused them. The agent joins the three
-            audit collections on <Mono>trns_id</Mono> / <Mono>sessn_tkn_id</Mono>, orders by time,
-            decodes transport-vs-business status, and names an{" "}
-            <span className="text-fg">ORIGIN distinct from the symptoms</span>. A single-log grep can
-            never do this.
-          </p>
-        </Section>
+      {/* the one idea */}
+      <div className="panel p-3">
+        <div className="mb-2 text-sm font-medium text-fg">The one idea · origin ≠ loudest error</div>
+        <div className="flex flex-col items-stretch gap-2 md:flex-row md:items-center">
+          <div className="flex-1 rounded border border-sev-crit/40 bg-sev-crit/5 p-2.5">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-sm bg-sev-crit" />
+              <span className="text-xs font-medium text-fg">LOUD symptom</span>
+            </div>
+            <div className="mt-1 text-[11px] text-fgdim">50 users see failures · a wall of red in <span className="font-mono text-muted">audit_error</span></div>
+          </div>
+          <span className="self-center text-lg text-muted">≠</span>
+          <div className="flex-1 rounded border border-sev-ok/40 bg-sev-ok/5 p-2.5">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-sm bg-sev-ok" />
+              <span className="text-xs font-medium text-fg">QUIET origin</span>
+            </div>
+            <div className="mt-1 text-[11px] text-fgdim">one shared route in <span className="font-mono text-muted">audit_service</span> — often a <span className="text-fg">success</span> doc</div>
+          </div>
+          <div className="flex-1 rounded border border-accent/30 bg-accent/5 p-2.5">
+            <div className="text-xs font-medium text-accent">the agent names the quiet one</div>
+            <div className="mt-1 text-[11px] text-fgdim">joins 3 collections on <span className="font-mono text-muted">trns_id</span>, orders by time, decodes transport vs business status</div>
+          </div>
+        </div>
       </div>
 
       {/* commands */}
-      <Section title="Driving the simulator" right="nova> prompt (make sim)">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
-          {CMDS.map((c) => (
-            <div key={c.cmd} className="panel-2 flex items-center gap-2 border border-edge p-2">
-              <span className="font-mono text-[11px] font-bold text-accent">{c.cmd}</span>
-              <span className="text-[11px] text-muted">{c.does}</span>
-            </div>
-          ))}
-        </div>
-        <p className="mt-2 text-[11px] leading-relaxed text-muted">
-          <span className="text-fgdim">fire</span> writes a command into the{" "}
-          <span className="font-mono text-accent2">agent_state</span> collection; the running simulator
-          polls it — so the Ops-board fire buttons and the CLI drive the exact same path.
-        </p>
-      </Section>
+      <div className="panel flex flex-wrap items-center gap-x-4 gap-y-1.5 p-2.5 text-[11px]">
+        <span className="label">drive it · nova&gt; prompt</span>
+        <span><span className="font-mono font-bold text-accent">status</span> <span className="text-muted">throughput</span></span>
+        <span><span className="font-mono font-bold text-accent">scenarios</span> <span className="text-muted">list ids</span></span>
+        <span><span className="font-mono font-bold text-accent">fire &lt;id&gt;</span> <span className="text-muted">inject effects</span></span>
+        <span><span className="font-mono font-bold text-accent">quit</span></span>
+        <span className="ml-auto text-muted">fire → <span className="font-mono text-accent2">agent_state</span> — same path as the Ops-board buttons</span>
+      </div>
     </div>
   );
 }

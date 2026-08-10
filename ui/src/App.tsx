@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { SevDot } from "./components/primitives";
@@ -43,6 +43,14 @@ export default function App() {
   const store = useAppStore();
   const [tab, setTab] = useState<TabKey>("ops");
   const [incidentKey, setIncidentKey] = useState<string | null>(null);
+  const [theme, setTheme] = useState<"dark" | "light">(
+    () => (localStorage.getItem("nova-theme") as "dark" | "light") || "dark",
+  );
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("nova-theme", theme);
+  }, [theme]);
 
   const openIncident = (key: string) => {
     setIncidentKey(key);
@@ -89,6 +97,13 @@ export default function App() {
             <span className="kpi text-[11px] text-accent">{fmtInt(store.tokens.tokens)}</span>
             <span className="kpi text-[11px] text-sev-ok">{fmtCost(store.tokens.cost)}</span>
           </div>
+          <button
+            onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+            title={`switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            className="rounded border border-edge2 px-2 py-1 font-mono text-[11px] text-fgdim transition-colors hover:border-accent hover:text-fg"
+          >
+            {theme === "dark" ? "☀ light" : "☾ dark"}
+          </button>
         </div>
       </header>
 

@@ -2,6 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --c-ink: 10 14 20;
+  --c-panel: 15 20 29;
+  --c-panel2: 19 26 37;
+  --c-edge: 30 39 50;
+  --c-edge2: 42 54 68;
+  --c-muted: 124 136 155;
+  --c-fg: 201 212 227;
+  --c-fgdim: 154 167 186;
+  --c-accent: 58 208 192;
+  --c-accent2: 42 168 150;
+  --c-sev-ok: 52 211 153;
+  --c-sev-warn: 244 183 64;
+  --c-sev-crit: 242 104 106;
+  --c-sev-info: 90 168 240;
+  --c-sev-biz: 192 132 252;
+  --scroll-thumb: #2a3644;
+}
+
+:root[data-theme="light"] {
+  --c-ink: 244 246 250;
+  --c-panel: 255 255 255;
+  --c-panel2: 237 241 247;
+  --c-edge: 214 221 231;
+  --c-edge2: 190 200 213;
+  --c-muted: 96 106 122;
+  --c-fg: 24 32 44;
+  --c-fgdim: 66 78 94;
+  --c-accent: 13 137 123;
+  --c-accent2: 11 118 106;
+  --c-sev-ok: 5 150 105;
+  --c-sev-warn: 202 138 4;
+  --c-sev-crit: 220 76 78;
+  --c-sev-info: 37 111 214;
+  --c-sev-biz: 147 51 234;
+  --scroll-thumb: #c1cad6;
+}
+
 @layer base {
   html,
   body,
@@ -14,14 +52,14 @@
   }
   * {
     scrollbar-width: thin;
-    scrollbar-color: #2a3644 transparent;
+    scrollbar-color: var(--scroll-thumb) transparent;
   }
   *::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
   *::-webkit-scrollbar-thumb {
-    background: #2a3644;
+    background: var(--scroll-thumb);
     border-radius: 8px;
   }
   *::-webkit-scrollbar-track {

@@ -24,7 +24,7 @@ export function Sparkline({ data, sev = "idle", baseline, width = 132, height = 
           y1={h / 2}
           x2={w - pad}
           y2={h / 2}
-          stroke="#2a3644"
+          className="stroke-edge2"
           strokeWidth={1}
           strokeDasharray="3 3"
         />
@@ -61,7 +61,7 @@ export function Sparkline({ data, sev = "idle", baseline, width = 132, height = 
           y1={y(baseline)}
           x2={w - pad}
           y2={y(baseline)}
-          stroke="#3a475a"
+          className="stroke-edge2"
           strokeWidth={1}
           strokeDasharray="2 3"
         />

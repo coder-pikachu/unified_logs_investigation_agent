@@ -28,10 +28,10 @@ function nodeX(i: number): number {
 }
 
 const STATE_COLOR: Record<NodeRuntime["state"], string> = {
-  pending: "#2a3644",
+  pending: "rgb(var(--c-edge2))",
   running: SEV_HEX.warn,
   done: SEV_HEX.ok,
-  skipped: "#4a5a6e",
+  skipped: "rgb(var(--c-muted))",
 };
 
 function GraphNode({
@@ -58,8 +58,7 @@ function GraphNode({
         width={NW}
         height={NH}
         rx={7}
-        fill={selected ? "#182230" : "#131a25"}
-        stroke={selected ? SEV_HEX.info : color}
+        style={{ fill: selected ? "rgb(var(--c-edge))" : "rgb(var(--c-panel2))", stroke: selected ? SEV_HEX.info : color }}
         strokeWidth={selected ? 2.2 : 1.4}
         strokeDasharray={rt.state === "skipped" ? "4 3" : undefined}
       />
@@ -67,7 +66,7 @@ function GraphNode({
         cx={x + 12}
         cy={NY + 13}
         r={3.5}
-        fill={color}
+        style={{ fill: color }}
         className={rt.state === "running" ? "animate-pulsedot" : undefined}
       />
       <text x={x + 22} y={NY + 17} fontSize={12} className="fill-fg font-mono" fontWeight={600}>
@@ -111,7 +110,7 @@ function Dag({
     <svg viewBox={`0 0 ${VBW} ${VBH}`} className="h-full w-full min-w-[1180px]" role="img" aria-label="agent workflow graph">
       <defs>
         <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6 Z" fill="#3a475a" />
+          <path d="M0,0 L6,3 L0,6 Z" style={{ fill: "rgb(var(--c-edge2))" }} />
         </marker>
         <marker id="arwA" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
           <path d="M0,0 L6,3 L0,6 Z" fill={SEV_HEX.ok} />
@@ -134,7 +133,7 @@ function Dag({
             y1={NY + NH / 2}
             x2={x2 - 2}
             y2={NY + NH / 2}
-            stroke={active ? SEV_HEX.ok : "#3a475a"}
+            style={{ stroke: active ? SEV_HEX.ok : "rgb(var(--c-edge2))" }}
             strokeWidth={active ? 1.8 : 1.2}
             strokeDasharray={running ? "4 3" : undefined}
             className={running ? "animate-flow" : undefined}
@@ -144,7 +143,7 @@ function Dag({
       })}
 
       {/* verify -> collect back-edge */}
-      <path d={backPath} fill="none" stroke="#3a475a" strokeWidth={1.2} strokeDasharray="3 4" markerEnd="url(#arwL)" />
+      <path d={backPath} fill="none" style={{ stroke: "rgb(var(--c-edge2))" }} strokeWidth={1.2} strokeDasharray="3 4" markerEnd="url(#arwL)" />
       {backEdgeAt > 0 && (
         <path
           key={backEdgeAt}

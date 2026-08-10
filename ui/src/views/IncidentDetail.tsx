@@ -90,7 +90,7 @@ function Swimlanes({
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="incident swimlanes">
       {/* time axis */}
-      <line x1={GUTTER} y1={top - 8} x2={W - 20} y2={top - 8} stroke="#2a3644" strokeWidth={1} />
+      <line x1={GUTTER} y1={top - 8} x2={W - 20} y2={top - 8} style={{ stroke: "rgb(var(--c-edge2))" }} strokeWidth={1} />
       <text x={GUTTER} y={top - 12} fontSize={8} className="fill-muted font-mono">
         {fmtClockMs(new Date(t0))}
       </text>
@@ -103,7 +103,7 @@ function Swimlanes({
         const gx = GUTTER + f * (W - GUTTER - 20);
         return (
           <g key={f}>
-            <line x1={gx} y1={top - 8} x2={gx} y2={H - 8} stroke="#1a2430" strokeWidth={1} strokeDasharray="2,3" />
+            <line x1={gx} y1={top - 8} x2={gx} y2={H - 8} style={{ stroke: "rgb(var(--c-edge))" }} strokeWidth={1} strokeDasharray="2,3" />
             <text x={gx} y={top - 12} fontSize={7} textAnchor="middle" className="fill-muted font-mono">
               {fmtClockMs(new Date(t0 + f * span))}
             </text>
@@ -113,11 +113,11 @@ function Swimlanes({
 
       {lanes.map((lane, li) => {
         const y = top + li * LH + LH / 2;
-        const groupColor = lane.group === "journey" ? "#3ad0c0" : "#5aa8f0";
+        const groupColor = lane.group === "journey" ? "rgb(var(--c-accent))" : "rgb(var(--c-sev-info))";
         return (
           <g key={`${lane.group}-${lane.key}`}>
-            <line x1={GUTTER} y1={y} x2={W - 20} y2={y} stroke="#171f2b" strokeWidth={1} />
-            <text x={6} y={y + 3} fontSize={9} className="font-mono" fill={groupColor}>
+            <line x1={GUTTER} y1={y} x2={W - 20} y2={y} style={{ stroke: "rgb(var(--c-edge))" }} strokeWidth={1} />
+            <text x={6} y={y + 3} fontSize={9} className="font-mono" style={{ fill: groupColor }}>
               {truncate(lane.key, 18)}
             </text>
             <text x={6} y={y + 12} fontSize={6.5} className="fill-muted font-mono">

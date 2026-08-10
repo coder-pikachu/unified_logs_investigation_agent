@@ -78,18 +78,18 @@ function FlowDiagram({ data, nowMs }: { data: ArchResponse; nowMs: number }) {
       {data.apps.map((a, i) => (
         <g key={a.id}>
           <rect x={8} y={appY(i) - 15} width={196} height={34} rx={4}
-                fill="#131a24" stroke={isActive(a.lastWriteAt, nowMs) ? "#34d399" : "#2a3644"} />
+                style={{ fill: "rgb(var(--c-panel2))", stroke: isActive(a.lastWriteAt, nowMs) ? "rgb(var(--c-sev-ok))" : "rgb(var(--c-edge2))" }} />
           <text x={18} y={appY(i) - 1} fontSize={10} className="fill-fg font-mono">{a.name}</text>
           <text x={18} y={appY(i) + 11} fontSize={8} className="fill-muted font-mono">
             {a.ingestPerSec.toFixed(2)} docs/s
           </text>
-          <line x1={204} y1={appY(i)} x2={300} y2={104} stroke="#2a3644" strokeWidth={1.2} />
+          <line x1={204} y1={appY(i)} x2={300} y2={104} style={{ stroke: "rgb(var(--c-edge2))" }} strokeWidth={1.2} />
         </g>
       ))}
       <text x={222} y={92} fontSize={8} className="fill-muted font-mono">Log4j2 inserts</text>
 
       {/* Atlas box */}
-      <rect x={300} y={30} width={250} height={150} rx={6} fill="#10251d" stroke="#34d399" />
+      <rect x={300} y={30} width={250} height={150} rx={6} style={{ fill: "rgb(var(--c-accent) / 0.12)", stroke: "rgb(var(--c-sev-ok))" }} />
       <text x={318} y={50} fontSize={11} className="fill-sev-ok font-mono">MongoDB ATLAS · nova_rca</text>
       {hot.map((c, i) => (
         <text key={c.name} x={318} y={72 + i * 18} fontSize={9} className="fill-fgdim font-mono">
@@ -101,12 +101,12 @@ function FlowDiagram({ data, nowMs }: { data: ArchResponse; nowMs: number }) {
       </text>
 
       {/* change streams arrow */}
-      <line x1={550} y1={105} x2={660} y2={105} stroke="#3ad0c0" strokeWidth={1.5} />
+      <line x1={550} y1={105} x2={660} y2={105} style={{ stroke: "rgb(var(--c-accent))" }} strokeWidth={1.5} />
       <text x={556} y={96} fontSize={8} className="fill-accent font-mono">Change Streams</text>
 
       {/* agent box */}
-      <rect x={660} y={70} width={190} height={70} rx={6} fill="#131a24" stroke={hbActive ? "#3ad0c0" : "#2a3644"} />
-      <circle cx={676} cy={88} r={4} fill={hbActive ? "#34d399" : "#4a5768"}
+      <rect x={660} y={70} width={190} height={70} rx={6} style={{ fill: "rgb(var(--c-panel2))", stroke: hbActive ? "rgb(var(--c-accent))" : "rgb(var(--c-edge2))" }} />
+      <circle cx={676} cy={88} r={4} style={{ fill: hbActive ? "rgb(var(--c-sev-ok))" : "rgb(var(--c-muted))" }}
               className={hbActive ? "animate-pulsedot" : undefined} />
       <text x={688} y={92} fontSize={10} className="fill-fg font-mono">RCA agent</text>
       <text x={676} y={110} fontSize={8} className="fill-muted font-mono">watcher · 9-node LangGraph</text>
@@ -115,9 +115,9 @@ function FlowDiagram({ data, nowMs }: { data: ArchResponse; nowMs: number }) {
       </text>
 
       {/* SSE arrow + console */}
-      <line x1={850} y1={105} x2={912} y2={105} stroke="#2a3644" strokeWidth={1.5} />
+      <line x1={850} y1={105} x2={912} y2={105} style={{ stroke: "rgb(var(--c-edge2))" }} strokeWidth={1.5} />
       <text x={858} y={96} fontSize={8} className="fill-muted font-mono">SSE</text>
-      <rect x={912} y={82} width={80} height={46} rx={6} fill="#131a24" stroke="#2a3644" />
+      <rect x={912} y={82} width={80} height={46} rx={6} style={{ fill: "rgb(var(--c-panel2))", stroke: "rgb(var(--c-edge2))" }} />
       <text x={926} y={102} fontSize={10} className="fill-fg font-mono">Console</text>
       <text x={926} y={116} fontSize={8} className="fill-muted font-mono">this UI</text>
     </svg>
