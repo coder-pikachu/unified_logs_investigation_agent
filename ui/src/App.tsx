@@ -11,11 +11,13 @@ import { IncidentDetail } from "./views/IncidentDetail";
 import { InvestigateView } from "./views/InvestigateView";
 import { MemoryView } from "./views/MemoryView";
 import { OpsBoard } from "./views/OpsBoard";
+import { SystemView } from "./views/SystemView";
 
-type TabKey = "ops" | "investigate" | "workflow" | "incident" | "architecture" | "memory";
+type TabKey = "ops" | "system" | "investigate" | "workflow" | "incident" | "architecture" | "memory";
 
 const TABS: { key: TabKey; label: string; hint: string }[] = [
   { key: "ops", label: "OPS BOARD", hint: "journeys · systems · firehose" },
+  { key: "system", label: "SYSTEM", hint: "simulator · journeys · logs" },
   { key: "investigate", label: "INVESTIGATE", hint: "chat · screenshot → RCA" },
   { key: "workflow", label: "AGENT WORKFLOW", hint: "9-node DAG · live" },
   { key: "incident", label: "INCIDENT DETAIL", hint: "timeline · RCA · fixes" },
@@ -93,6 +95,7 @@ export default function App() {
       <main className="min-h-0 flex-1">
         <ErrorBoundary resetKey={tab}>
           {tab === "ops" && <OpsBoard store={store} active onOpenIncident={openIncident} />}
+          {tab === "system" && <SystemView />}
           {tab === "investigate" && <InvestigateView store={store} onOpenIncident={openIncident} />}
           {tab === "workflow" && <AgentWorkflow store={store} />}
           {tab === "incident" && (
